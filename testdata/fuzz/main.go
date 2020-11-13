@@ -31,7 +31,7 @@ func main() {
 
 	log.Printf("fuzzing in progress [iterations:%d seed:%d]", flags.iterations, flags.randSeed)
 	for i := 0; i < flags.iterations; i++ {
-		compression := rnd.Float64() * 2_000
+		compression := rnd.Intn(2_000)
 		numEntries := rnd.Intn(flags.maxEntries)
 
 		td := tdigest.NewWithCompression(compression)

@@ -28,10 +28,10 @@ func New() *TDigest {
 }
 
 // NewWithCompression initializes a new distribution with custom compression.
-func NewWithCompression(c float64) *TDigest {
-	t := &TDigest{compression: c}
-	t.maxProcessed = processedSize(0, t.compression)
-	t.maxUnprocessed = unprocessedSize(0, t.compression)
+func NewWithCompression(c int) *TDigest {
+	t := &TDigest{compression: float64(c)}
+	t.maxProcessed = processedSize(0, c)
+	t.maxUnprocessed = unprocessedSize(0, c)
 	t.processed = make([]centroid, 0, t.maxProcessed)
 	t.unprocessed = make([]centroid, 0, t.maxUnprocessed+1)
 	t.Reset()
@@ -309,16 +309,16 @@ func weightedAverageSorted(x1, w1, x2, w2 float64) float64 {
 	return math.Max(x1, math.Min(x, x2))
 }
 
-func processedSize(size int, compression float64) int {
+func processedSize(size, compression int) int {
 	if size == 0 {
-		return int(2 * math.Ceil(compression))
+		return 2 * compression
 	}
 	return size
 }
 
-func unprocessedSize(size int, compression float64) int {
+func unprocessedSize(size, compression int) int {
 	if size == 0 {
-		return int(8 * math.Ceil(compression))
+		return 8 * compression
 	}
 	return size
 }
