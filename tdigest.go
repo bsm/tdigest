@@ -18,6 +18,8 @@ type TDigest struct {
 	unprocessedWeight float64
 	min               float64
 	max               float64
+	sum               float64
+	sumSquares        float64
 }
 
 // New initializes a new distribution with a default compression.
@@ -45,6 +47,8 @@ func (t *TDigest) Reset() {
 	t.unprocessedWeight = 0
 	t.min = math.MaxFloat64
 	t.max = -math.MaxFloat64
+	t.sum = 0
+	t.sumSquares = 0
 }
 
 // Add adds a value x with a weight w to the distribution.
@@ -59,6 +63,10 @@ func (t *TDigest) add(c centroid) {
 
 	t.unprocessed = append(t.unprocessed, c)
 	t.unprocessedWeight += c.Weight
+
+	val := c.Mean * c.Weight
+	t.sum += val
+	t.sumSquares += val * c.Mean
 
 	if len(t.processed) > t.maxProcessed || len(t.unprocessed) > t.maxUnprocessed {
 		t.process()
@@ -124,11 +132,38 @@ func (t *TDigest) Centroid(index int) (mean, weight float64) {
 
 // Count returns the total weight observed.
 func (t *TDigest) Count() float64 {
-	t.process()
+	return t.unprocessedWeight + t.processedWeight
+}
 
-	// t.process always updates t.processedWeight to the total count of all
-	// centroids, so we don't need to re-count here.
-	return t.processedWeight
+// Sum returns the weighted sum of all observed values.
+func (t *TDigest) Sum() float64 {
+	return t.sum
+}
+
+// Mean returns a mean average.
+func (t *TDigest) Mean() float64 {
+	if t.Count() == 0 {
+		return math.NaN()
+	}
+	return t.sum / t.Count()
+}
+
+// SampleVariance is the sample variance.
+func (t *TDigest) SampleVariance() float64 {
+	weight := t.Count()
+	if weight <= 1 {
+		return math.NaN()
+	}
+	return (t.sumSquares - (t.sum * t.sum / weight)) / (weight - 1)
+}
+
+// PopulationVariance is the population variance.
+func (t *TDigest) PopulationVariance() float64 {
+	weight := t.Count()
+	if weight <= 0 {
+		return math.NaN()
+	}
+	return (t.sumSquares - (t.sum * t.sum / weight)) / weight
 }
 
 func (t *TDigest) updateCumulative() {

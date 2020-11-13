@@ -101,21 +101,41 @@ var _ = Describe("TDigest", func() {
 
 	It("should calc min", func() {
 		Expect(blank.Min()).To(Equal(math.MaxFloat64))
-		Expect(subject.Min()).To(Equal(float64(6)))
+		Expect(subject.Min()).To(Equal(6.0))
 	})
 
 	It("should calc max", func() {
 		Expect(blank.Max()).To(Equal(-math.MaxFloat64))
-		Expect(subject.Max()).To(Equal(float64(49)))
+		Expect(subject.Max()).To(Equal(49.0))
+	})
+
+	It("should calc mean", func() {
+		Expect(math.IsNaN(blank.Mean())).To(BeTrue())
+		Expect(subject.Mean()).To(BeNumerically("~", 33.3, 0.1))
+	})
+
+	It("should calc variance", func() {
+		Expect(math.IsNaN(blank.SampleVariance())).To(BeTrue())
+		Expect(subject.SampleVariance()).To(BeNumerically("~", 253.8, 0.1))
+
+		Expect(math.IsNaN(blank.PopulationVariance())).To(BeTrue())
+		Expect(subject.PopulationVariance()).To(BeNumerically("~", 230.7, 0.1))
+	})
+
+	It("should calc weighted sum", func() {
+		Expect(blank.Sum()).To(Equal(0.0))
+		Expect(subject.Sum()).To(Equal(366.0))
 	})
 
 	It("should merge", func() {
 		t2 := seedTD(11, 2, 3, 14, 7, 4)
 		Expect(t2.Count()).To(Equal(6.0))
+		Expect(t2.Sum()).To(Equal(41.0))
 		Expect(t2.Quantile(0.5)).To(BeNumerically("~", 5.5, 0.1))
 
 		t2.Merge(subject)
 		Expect(t2.Count()).To(Equal(17.0))
+		Expect(t2.Sum()).To(BeNumerically("~", 407.0, 0.0))
 		Expect(t2.Quantile(0.5)).To(BeNumerically("~", 15.0, 0.1))
 	})
 
