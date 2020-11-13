@@ -5,3 +5,5 @@ go:
 cache:
   directories:
     - $GOPATH/pkg/mod
+script:
+  - make default fuzz
