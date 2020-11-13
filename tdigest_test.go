@@ -140,9 +140,12 @@ var _ = Describe("TDigest", func() {
 	})
 
 	It("should add with weight", func() {
+		Expect(subject.Sum()).To(Equal(366.0))
 		Expect(subject.Quantile(0.5)).To(BeNumerically("~", 40.0, 0.1))
+
 		subject.Add(6.5, 2.4)
 		subject.Add(15, 3.2)
+		Expect(subject.Sum()).To(Equal(429.6))
 		Expect(subject.Quantile(0.5)).To(BeNumerically("~", 19.2, 0.1))
 	})
 })
